@@ -163,7 +163,7 @@ const CustodianDApp = () => {
 
   // This method checks if Metamask selected network is Localhost:8545
   const _checkNetwork = useCallback(() => {
-    if (window.ethereum.networkVersion === HARDHAT_NETWORK_ID) {
+    if (window.ethereum.networkVersion === process.env.HARDHAT_NETWORK_ID) {
       return true;
     }
 

@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/custodian-wallet-eth/precache-manifest.4a4b66b25a4a7b8813c61652852d4f9d.js"
+  "/custodian-wallet-eth/precache-manifest.a8d21b7f44db7f9536e1ecbe3932017b.js"
 );
 
 self.addEventListener('message', (event) => {

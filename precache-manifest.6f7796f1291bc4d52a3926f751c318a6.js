@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "d864f328465ab621412424d70053db14",
+    "revision": "243d56be42b480c2011e8c2472a9e386",
     "url": "/custodian-wallet-eth/index.html"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/custodian-wallet-eth/static/js/2.e18bd9ce.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "801a10b4bbaf2797e033",
-    "url": "/custodian-wallet-eth/static/js/main.d089622c.chunk.js"
+    "revision": "40e37c2fb972cfd44c77",
+    "url": "/custodian-wallet-eth/static/js/main.6b5ee1c5.chunk.js"
   },
   {
     "revision": "14eaee66c855451e8efb",

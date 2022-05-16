@@ -11,7 +11,7 @@ async function main() {
   }
 
   // ethers is available in the global scope
-  const [deployer] = await ethers.getSigners();
+  const [deployer, custodianManager] = await ethers.getSigners();
   console.log(
     "Deploying the contracts with the account:",
     await deployer.getAddress()
@@ -19,17 +19,28 @@ async function main() {
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
+  const CustodianSC = await ethers.getContractFactory("CustodianSC", custodianManager);
   const Token = await ethers.getContractFactory("Token");
-  const token = await Token.deploy();
-  await token.deployed();
 
-  console.log("Token address:", token.address);
+  const custodianSC = await CustodianSC.deploy(0,'0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266');
+  await custodianSC.deployed();
+
+  const munkToken = await Token.deploy('MUNK coin', 'MUNK');
+  await munkToken.deployed();
+  const punkToken = await Token.deploy('PUNK coin', 'PUNK');
+  await punkToken.deployed();
+
+  console.log("MUNK Token address:", munkToken.address);
+  console.log("PUNK Token address:", punkToken.address);
+  console.log("CustodianSC address:", custodianSC.address);
 
   // We also save the contract's artifacts and address in the frontend directory
-  saveFrontendFiles(token);
+  saveFrontendFiles(munkToken, 'Token', 'MUNK');
+  saveFrontendFiles(punkToken, 'Token', 'PUNK');
+  saveFrontendFiles(custodianSC, 'CustodianSC', 'CustodianSC');
 }
 
-function saveFrontendFiles(token) {
+function saveFrontendFiles(token, contract, contractName, ) {
   const fs = require("fs");
   const contractsDir = __dirname + "/../frontend/src/contracts";
 
@@ -38,14 +49,14 @@ function saveFrontendFiles(token) {
   }
 
   fs.writeFileSync(
-    contractsDir + "/contract-address.json",
+    contractsDir + `/${contractName}-address.json`,
     JSON.stringify({ Token: token.address }, undefined, 2)
   );
 
-  const TokenArtifact = artifacts.readArtifactSync("Token");
+  const TokenArtifact = artifacts.readArtifactSync(contract);
 
   fs.writeFileSync(
-    contractsDir + "/Token.json",
+    contractsDir + `/${contractName}.json`,
     JSON.stringify(TokenArtifact, null, 2)
   );
 }

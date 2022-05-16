@@ -14,7 +14,7 @@ module.exports = {
     },
     ropsten: {
       url: `https://eth-ropsten.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [`${process.env.ROPSTEN_PRIVATE_KEY}`]
+      accounts: [`${process.env.ROPSTEN_PRIVATE_KEY}`,`${process.env.ROPSTEN_PRIVATE_KEY}`]
     }
   }
 };

@@ -55,11 +55,11 @@ const initialState = {
 };
 
 const tokens = [{token:'MUNK',tokenAddress:MUNKAddress.Token},{token:'PUNK',tokenAddress:PUNKAddress.Token}]
+let _pollDataInterval
 
 const CustodianDApp = () => {
   const [state, setState] = useState(initialState);
   const [_provider, setProvider] = useState(null);
-  const [_pollDataInterval, setPollDataInterval] = useState(null);
   const [input, setInput] = useState({ id: "", address: "",token:"" });
   const [custodians, setCustodians] = useState([]);
   const [transferState, setTransferState] = useState({});
@@ -96,17 +96,17 @@ const CustodianDApp = () => {
     if(!_provider){
       return
     }
-    setPollDataInterval(
-      setInterval(() => {
-        _updateBalance();
-      }, 1000)
-    );
+    _pollDataInterval = setInterval(() => {
+      _updateBalance();
+    }, 1000)
   }, [_provider]);
 
-  const _stopPollingData = useCallback(() => {
-    clearInterval(_pollDataInterval);
-    _pollDataInterval = undefined;
-  }, [_pollDataInterval]);
+  const _stopPollingData = () => {
+    console.log({_pollDataInterval})
+    if(_pollDataInterval){
+      clearInterval(_pollDataInterval);
+    }
+  };
 
   const _updateBalance = async () => {
     const rawData = window.localStorage.getItem("data")
@@ -159,17 +159,19 @@ const CustodianDApp = () => {
 
   const _resetState = () => {
     setState(initialState);
+    setCustodians([]);
+    window.localStorage.setItem("data", JSON.stringify([]));
   };
 
   // This method checks if Metamask selected network is Localhost:8545
   const _checkNetwork = useCallback(() => {
-    if (window.ethereum.networkVersion === process.env.HARDHAT_NETWORK_ID) {
+    if (window.ethereum.networkVersion === process.env.REACT_APP_HARDHAT_NETWORK_ID) {
       return true;
     }
 
     setState({
       ...state,
-      networkError: "Please connect Metamask to Localhost:8545",
+      networkError: "Please connect Metamask to Ropsten",
     });
 
     return false;
@@ -197,6 +199,7 @@ const CustodianDApp = () => {
     window.ethereum.on("chainChanged", ([networkId]) => {
       _stopPollingData();
       _resetState();
+      _checkNetwork()
     });
   }, []);
 

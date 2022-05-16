@@ -24,15 +24,16 @@ async function main() {
 
   const custodianSC = await CustodianSC.deploy(0,'0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266');
   await custodianSC.deployed();
+  console.log("CustodianSC address:", custodianSC.address);
 
   const munkToken = await Token.deploy('MUNK coin', 'MUNK');
   await munkToken.deployed();
+  console.log("MUNK Token address:", munkToken.address);
+
   const punkToken = await Token.deploy('PUNK coin', 'PUNK');
   await punkToken.deployed();
-
-  console.log("MUNK Token address:", munkToken.address);
   console.log("PUNK Token address:", punkToken.address);
-  console.log("CustodianSC address:", custodianSC.address);
+
 
   // We also save the contract's artifacts and address in the frontend directory
   saveFrontendFiles(munkToken, 'Token', 'MUNK');

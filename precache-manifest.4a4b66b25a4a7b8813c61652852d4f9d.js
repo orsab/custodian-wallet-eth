@@ -1,23 +1,23 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "12fa21437dbebd567200030fa8e4cec7",
+    "revision": "4d30f5d529e6fd718e3964ccfd8f82fb",
     "url": "/custodian-wallet-eth/index.html"
   },
   {
-    "revision": "e8b87410eae75987d7e8",
+    "revision": "a22b6df71e3410e10773",
     "url": "/custodian-wallet-eth/static/css/2.5aa997f2.chunk.css"
   },
   {
-    "revision": "e8b87410eae75987d7e8",
-    "url": "/custodian-wallet-eth/static/js/2.72b5100c.chunk.js"
+    "revision": "a22b6df71e3410e10773",
+    "url": "/custodian-wallet-eth/static/js/2.5fb1ae2f.chunk.js"
   },
   {
     "revision": "d57dae176fb87a393a80e02d0e438720",
-    "url": "/custodian-wallet-eth/static/js/2.72b5100c.chunk.js.LICENSE.txt"
+    "url": "/custodian-wallet-eth/static/js/2.5fb1ae2f.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "cc252649e6c1fdd5ab71",
-    "url": "/custodian-wallet-eth/static/js/main.c80efee1.chunk.js"
+    "revision": "b1a217b339bc19b08605",
+    "url": "/custodian-wallet-eth/static/js/main.8c78eacc.chunk.js"
   },
   {
     "revision": "14eaee66c855451e8efb",

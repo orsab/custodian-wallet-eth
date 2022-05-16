@@ -36,7 +36,7 @@ describe("Custodian contract", function () {
   const address = '0xB3b810dfAFbfCF9d86F7dd8D36f200e984839249'
 
   beforeEach(async ()=>{
-    custodian = await Custodian.deploy(3, address);
+    custodian = await Custodian.deploy(3);
   })
 
   // You can nest describe calls to create subsections.
@@ -60,6 +60,7 @@ describe("Custodian contract", function () {
 
   it("After withdraw should update balances", async function () {
     await custodian.importToken(3, hardhatToken.address);
+    await custodian.setCustomerAddress(address)
     await hardhatToken.transfer(custodian.address, '10')
     await custodian.withdraw(3)
 
@@ -81,6 +82,19 @@ describe("Custodian contract", function () {
     await custodian.importToken(3, hardhatToken.address);
     
     expect(custodian.importToken(3, hardhatToken.address)).to.be.revertedWith('Token already imported')
+  })
+
+  it("Should revert if on withdraw customer address not setted", async function () {
+    await custodian.importToken(3, hardhatToken.address);
+    
+    expect(custodian.withdraw(3)).to.be.revertedWith('Customer address not setted')
+  })
+
+  it("Should revert if on withdraw customer id is wrong", async function () {
+    await custodian.importToken(3, hardhatToken.address);
+    await custodian.setCustomerAddress(address)
+    
+    expect(custodian.withdraw(4)).to.be.revertedWith('Bad customer Id supplied')
   })
 
 });

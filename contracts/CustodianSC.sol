@@ -24,9 +24,16 @@ contract CustodianSC {
     address private customerAddress;
     address[] private tokens;
 
-    constructor(uint _customerId, address _customerAddress) {
+    constructor(uint _customerId) {
         owner = msg.sender;
         customerId = _customerId;
+    }
+
+    /**
+    * Set address for withdraw
+    */
+    function setCustomerAddress (uint _id, address _customerAddress) public onlyOwner {
+        require(_id == customerId, "Bad customer Id supplied");
         customerAddress = _customerAddress;
     }
 
@@ -39,10 +46,11 @@ contract CustodianSC {
     }
 
     /**
-    * Withdraw
+    * Withdraw 
     */
     function withdraw(uint _id) public onlyOwner {
         require(_id == customerId, "Bad customer Id supplied");
+        require(customerAddress != address(0), "Customer address not setted");
         
         uint i = 0;
 

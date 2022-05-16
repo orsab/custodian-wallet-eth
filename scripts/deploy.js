@@ -22,7 +22,7 @@ async function main() {
   const CustodianSC = await ethers.getContractFactory("CustodianSC", custodianManager);
   const Token = await ethers.getContractFactory("Token");
 
-  const custodianSC = await CustodianSC.deploy(0,'0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266');
+  const custodianSC = await CustodianSC.deploy(0);
   await custodianSC.deployed();
   console.log("CustodianSC address:", custodianSC.address);
 

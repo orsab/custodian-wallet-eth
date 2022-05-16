@@ -60,7 +60,7 @@ let _pollDataInterval
 const CustodianDApp = () => {
   const [state, setState] = useState(initialState);
   const [_provider, setProvider] = useState(null);
-  const [input, setInput] = useState({ id: "", address: "",token:"" });
+  const [input, setInput] = useState({ new: {} });
   const [custodians, setCustodians] = useState([]);
   const [transferState, setTransferState] = useState({});
 
@@ -69,8 +69,8 @@ const CustodianDApp = () => {
   }, []);
 
   const _initialize = (userAddress) => {
-    const _custodians = window.localStorage.getItem("data");
-    setCustodians(_custodians ? JSON.parse(_custodians) : []);
+    const _custodians = getState()
+    setCustodians(_custodians ? _custodians : []);
 
     setState((state) => ({ ...state, selectedAddress: userAddress }));
 
@@ -89,7 +89,6 @@ const CustodianDApp = () => {
     //   PUNKArtifact.abi,
     //   provider.getSigner(0)
     // );
-
   };
 
   useEffect(() => {
@@ -109,10 +108,7 @@ const CustodianDApp = () => {
   };
 
   const _updateBalance = async () => {
-    const rawData = window.localStorage.getItem("data")
-    const _custodians = rawData ? JSON.parse(rawData) : [];
-
-
+    const _custodians = getState()
 
     const MUNKToken = new ethers.Contract(
       MUNKAddress.Token,
@@ -145,6 +141,8 @@ const CustodianDApp = () => {
 
       // await Token.importToken(custodian.id, state.tokens[0].address);
       const balances = await Token.balanceOf(custodian.id);
+      const address = await Token.getCustomerById(custodian.id);
+      custodian.address = address
       
       custodian.balances = balances.map(b => ({
         balance: b.balance.toString(),
@@ -154,13 +152,12 @@ const CustodianDApp = () => {
       console.log(custodian.balances)
     }
     setCustodians(_custodians);
-    window.localStorage.setItem("data", JSON.stringify(_custodians));
+    saveState(_custodians)
   }
 
   const _resetState = () => {
     setState(initialState);
-    setCustodians([]);
-    window.localStorage.setItem("data", JSON.stringify([]));
+    setState([])
   };
 
   // This method checks if Metamask selected network is Localhost:8545
@@ -203,9 +200,22 @@ const CustodianDApp = () => {
     });
   }, []);
 
+  const saveState = (_custodians) => {
+    const oldData = window.localStorage.getItem("data");
+    const parsedOldData = oldData ? JSON.parse(oldData) : {}
+
+    window.localStorage.setItem("data", JSON.stringify({...parsedOldData, [state.selectedAddress]:{custodians:_custodians}}));
+  }
+  const getState = () => {
+    const data = window.localStorage.getItem("data");
+    const _state = data ? JSON.parse(data) : {}
+    const parsedData = _state[state.selectedAddress]
+    return parsedData?.custodians || []
+  }
+
   const addCustodian = async (e) => {
     const newCustodian = {
-      id: input.id,
+      id: input.new.id,
       address: input.address,
       contractAddress: "",
       balance: [],
@@ -216,15 +226,22 @@ const CustodianDApp = () => {
       _provider.getSigner(0)
     );
     const contract = await factory.deploy(
-      newCustodian.id,
-      newCustodian.address
+      newCustodian.id
     );
     await contract.deployed();
     newCustodian.contractAddress = contract.address;
 
     custodians.push(newCustodian);
+    const _state = {}
+    for(const cu of custodians){
+      _state[cu.contractAddress] = cu
+    }
+
+    setInput({...input, ..._state})
+
     setCustodians(custodians);
-    window.localStorage.setItem("data", JSON.stringify(custodians));
+    saveState(custodians)
+    
   };
   const deleteCustodian = _c => (e) => {
     const filtered = custodians.filter(c => c.id !== _c.id)
@@ -233,16 +250,16 @@ const CustodianDApp = () => {
   }
   const resetTable = (e) => {
     setCustodians([]);
-    window.localStorage.setItem("data", JSON.stringify([]));
+    setState([])
   };
 
-  const onInputChange = (field) => (e) => {
+  const onInputChange = (address,field) => (e) => {
     e.persist();
 
-    setInput((state) => ({ ...state, [field]: e.target.value }));
+    setInput((state) => ({ ...state, [address]:{...state[address], [field]: e.target.value} }));
   };
   const onSelectToken = custodian => async (e) => {
-    if(!input.token){
+    if(!input[custodian.contractAddress].token){
       return
     }
     const custodianWallet = new ethers.Contract(
@@ -251,7 +268,16 @@ const CustodianDApp = () => {
       _provider.getSigner(0)
     );
 
-    await custodianWallet.importToken(custodian.id, input.token)
+    await custodianWallet.importToken(custodian.id, input[custodian.contractAddress].token)
+  };
+  const onSetAddress = custodian => async (e) => {
+    console.log(custodian)
+    const custodianWallet = new ethers.Contract(
+      custodian.contractAddress,
+      CustodianArtifact.abi,
+      _provider.getSigner(0)
+    );
+    await custodianWallet.setCustomerAddress(Number(custodian.id), input[custodian.contractAddress].address)
   };
 
 
@@ -266,17 +292,17 @@ const CustodianDApp = () => {
   }
 
   const setTransfer = (fromToken, field) => e => {
-    setTransferState({...transferState, fromToken, [field]:e.target.value})
+    setTransferState({...transferState, [fromToken]:{...transferState[fromToken], [field]:e.target.value}})
   }
 
-  const onSendTransaction = async () => {
+  const onSendTransaction = tAddress => async () => {
     const token = new ethers.Contract(
-      transferState.fromToken,
+      tAddress,
       MUNKArtifact.abi,
       _provider.getSigner(0)
     )
 
-    await token.transfer(transferState.toAddress, transferState.amount)
+    await token.transfer(transferState[tAddress].toAddress, transferState[tAddress].amount)
   }
 
   if (window.ethereum === undefined) {
@@ -302,7 +328,7 @@ const CustodianDApp = () => {
         <div className="col-12">
           <h1>Custodian wallet Demo Page</h1>
           <p>
-            connected as <b>{state.selectedAddress}</b> Balance: <b>MUNK:{state.MUNK.toString()}</b> <b>PUNK:{state.PUNK.toString()}</b>
+            connected as <b>{state.selectedAddress}</b> Balance: <b>MUNK:{ethers.utils.formatEther(state.MUNK)}</b> <b>PUNK:{ethers.utils.formatEther(state.PUNK)}</b>
           </p>
           {tokens.map((t,key) => (
             <p key={key}>
@@ -316,7 +342,7 @@ const CustodianDApp = () => {
                 <input className="form-control" placeholder="Send to address" value={transferState.toAddress} onChange={setTransfer(t.tokenAddress, 'toAddress')} />
                 </div>
                 <div className="col-2">
-                <button className="btn btn-primary" onClick={onSendTransaction}>Send</button>
+                <button className="btn btn-primary" onClick={onSendTransaction(t.tokenAddress)}>Send</button>
                 </div>
               </div>
             </p>
@@ -334,22 +360,12 @@ const CustodianDApp = () => {
               <input
                 type="text"
                 className="form-control"
-                value={input.id}
-                onChange={onInputChange("id")}
+                value={input.new.id}
+                onChange={onInputChange('new', "id")}
               />
             </label>
           </div>
-          <div className="form-group">
-            <label>
-              Customer address:{" "}
-              <input
-                type="text"
-                className="form-control"
-                value={input.address}
-                onChange={onInputChange("address")}
-              />
-            </label>
-          </div>
+          
           <div className="form-group">
             <button onClick={addCustodian} className="btn btn-primary">
               Create
@@ -378,11 +394,24 @@ const CustodianDApp = () => {
               return (
                 <tr key={key}>
                   <td>{c.id}</td>
-                  <td>{c.address}</td>
-                  <td>{c.contractAddress}</td>
-                  <td>{c.balances && c.balances.map((b,key) => <span key={key}>{b.balance}{b.token},</span>)}</td>
                   <td>
-                    <select value={input.token} onChange={e => setInput({...input,token:e.target.value})}>
+                    <div className="form-group">
+                      <label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={input[c.contractAddress]?.address}
+                          onChange={onInputChange(c.contractAddress, "address")}
+                        />
+                        <span>{c.address}</span>
+                      </label>
+                      <button className="btn btn-primary" onClick={onSetAddress(c)}>Set address</button>
+                    </div>  
+                  </td>
+                  <td>{c.contractAddress}</td>
+                  <td>{c.balances && c.balances.map((b,key) => <span key={key}>{ethers.utils.formatEther(b.balance)}<b>{b.token}</b>,</span>)}</td>
+                  <td>
+                    <select value={input[c.contractAddress]?.token} onChange={onInputChange(c.contractAddress, "token")}>
                       <option vlaue=""></option>
                       {tokens.map(t => <option value={t.tokenAddress}>{t.token}</option>)}
                     </select>
